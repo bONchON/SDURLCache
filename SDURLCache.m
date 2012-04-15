@@ -36,7 +36,18 @@ static NSDateFormatter* CreateDateFormatter(NSString *format)
 
 - (void)encodeWithCoder:(NSCoder *)coder
 {
-    [coder encodeDataObject:self.data];
+    // need to check if calling self.data changes retain count
+    // if it does, need to balance out retain calls
+    // if not, just use it normally
+    // NOTE: increment in retainCount is likely an apple issue.
+    if (self.data.retainCount == self.data.retainCount) {
+        [coder encodeDataObject:self.data];
+    }
+    else {
+    	[coder encodeDataObject:self.data.autorelease.autorelease.autorelease];
+    }
+        
+    
     [coder encodeObject:self.response forKey:@"response"];
     [coder encodeObject:self.userInfo forKey:@"userInfo"];
     [coder encodeInt:self.storagePolicy forKey:@"storagePolicy"];
